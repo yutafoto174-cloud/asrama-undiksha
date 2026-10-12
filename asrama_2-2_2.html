@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIAR — Sistem Informasi Asrama Undiksha</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#0B1D3A;--navy-mid:#152D55;--blue:#1A56DB;--blue-light:#3B82F6;
+  --teal:#0D9488;--teal-light:#14B8A6;--amber:#F59E0B;--red:#EF4444;--green:#10B981;
+  --white:#FFFFFF;--gray-50:#F8FAFC;--gray-100:#F1F5F9;--gray-200:#E2E8F0;
+  --gray-400:#94A3B8;--gray-600:#475569;--gray-800:#1E293B;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08);--shadow:0 4px 16px rgba(11,29,58,0.12);
+  --shadow-lg:0 8px 32px rgba(11,29,58,0.18);--radius:14px;--radius-sm:8px;--sidebar-w:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--gray-50);color:var(--gray-800);min-height:100vh;}
+
+/* ══ PUBLIC SHELL ══ */
+#public-shell{display:flex;flex-direction:column;min-height:100vh;}
+#public-shell.hidden{display:none;}
+
+.pub-topbar{background:var(--navy);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.pub-brand{display:flex;align-items:center;gap:10px;}
+.pub-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--teal),var(--blue-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.pub-brand-name{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:white;letter-spacing:-0.3px;}
+.pub-brand-sub{font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:0.3px;}
+.pub-topbar-right{display:flex;align-items:center;gap:10px;}
+.pub-nav{display:flex;gap:4px;}
+.pub-nav-btn{background:none;border:none;padding:8px 14px;border-radius:8px;color:rgba(255,255,255,0.7);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit;}
+.pub-nav-btn:hover{background:rgba(255,255,255,0.1);color:white;}
+.pub-nav-btn.active{background:rgba(255,255,255,0.15);color:white;font-weight:600;}
+.pub-content{flex:1;padding:32px;max-width:1100px;margin:0 auto;width:100%;}
+.pub-page{display:none;animation:fadeIn .3s ease;}
+.pub-page.active{display:block;}
+
+/* ══ APP SHELL ══ */
+#app-shell{display:none;}
+#app-shell.active{display:flex;min-height:100vh;}
+
+.sidebar{width:var(--sidebar-w);background:var(--navy);height:100vh;position:fixed;top:0;left:0;display:flex;flex-direction:column;z-index:100;}
+.sidebar-brand{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.brand-logo{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.brand-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--teal),var(--blue-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.brand-name{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--white);letter-spacing:-0.3px;}
+.brand-sub{font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.3px;}
+.sidebar-user{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.user-card{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--teal-light),var(--blue-light));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:600;color:white;}
+.user-role{font-size:11px;color:rgba(255,255,255,0.45);}
+.sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all .2s;margin-bottom:2px;color:rgba(255,255,255,0.6);font-size:13.5px;font-weight:500;border:none;background:none;width:100%;text-align:left;}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:white;}
+.nav-item.active{background:linear-gradient(135deg,rgba(26,86,219,0.6),rgba(13,148,136,0.4));color:white;font-weight:600;}
+.nav-item .nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--red);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px;}
+.sidebar-footer{padding:16px 12px;border-top:1px solid rgba(255,255,255,0.07);}
+
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;}
+.topbar{background:white;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--gray-200);position:sticky;top:0;z-index:50;box-shadow:var(--shadow-sm);}
+.topbar-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--navy);}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.topbar-notif{width:36px;height:36px;border-radius:10px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;font-size:16px;border:none;transition:background .2s;}
+.topbar-notif:hover{background:var(--gray-200);}
+.notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;position:absolute;top:6px;right:6px;border:1.5px solid white;}
+.page{display:none;padding:28px;animation:fadeIn .3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* ══ REUSABLE COMPONENTS ══ */
+.card{background:white;border-radius:var(--radius);box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);}
+.card-header{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:15px;font-weight:700;color:var(--navy);}
+.card-body{padding:20px 24px;}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:white;border-radius:var(--radius);padding:20px;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.stat-card.blue::before{background:linear-gradient(90deg,var(--blue),var(--blue-light));}
+.stat-card.teal::before{background:linear-gradient(90deg,var(--teal),var(--teal-light));}
+.stat-card.amber::before{background:linear-gradient(90deg,var(--amber),#FCD34D);}
+.stat-card.red::before{background:linear-gradient(90deg,var(--red),#F87171);}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:12px;}
+.stat-icon.blue{background:#EFF6FF;}.stat-icon.teal{background:#F0FDFA;}.stat-icon.amber{background:#FFFBEB;}.stat-icon.red{background:#FEF2F2;}
+.stat-value{font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:var(--navy);line-height:1;margin-bottom:4px;}
+.stat-label{font-size:12.5px;color:var(--gray-600);font-weight:500;}
+.stat-change{font-size:11.5px;margin-top:6px;font-weight:600;}
+.stat-change.up{color:var(--green);}.stat-change.down{color:var(--red);}
+
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 16px;font-size:11.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--gray-600);background:var(--gray-50);border-bottom:1px solid var(--gray-200);text-align:left;}
+tbody td{padding:13px 16px;font-size:13.5px;border-bottom:1px solid var(--gray-100);color:var(--gray-800);}
+tbody tr:hover{background:var(--gray-50);}
+tbody tr:last-child td{border-bottom:none;}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.badge-green{background:#D1FAE5;color:#065F46;}.badge-red{background:#FEE2E2;color:#991B1B;}
+.badge-amber{background:#FEF3C7;color:#92400E;}.badge-blue{background:#DBEAFE;color:#1E40AF;}
+.badge-gray{background:var(--gray-100);color:var(--gray-600);}.badge-teal{background:#CCFBF1;color:#134E4A;}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:inherit;}
+.btn-primary{background:var(--blue);color:white;}
+.btn-primary:hover{background:#1D4ED8;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,86,219,0.35);}
+.btn-teal{background:var(--teal);color:white;}
+.btn-teal:hover{background:#0F766E;transform:translateY(-1px);}
+.btn-outline{background:white;border:1.5px solid var(--gray-200);color:var(--gray-800);}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue);background:#EFF6FF;}
+.btn-ghost{background:rgba(255,255,255,0.12);color:white;border:1px solid rgba(255,255,255,0.2);}
+.btn-ghost:hover{background:rgba(255,255,255,0.22);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:6px;}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-size:13.5px;font-family:inherit;color:var(--gray-800);background:white;transition:border-color .2s,box-shadow .2s;outline:none;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,0.1);}
+.form-input.error,.form-select.error{border-color:var(--red);}
+.form-textarea{resize:vertical;min-height:90px;}
+.form-error{font-size:12px;color:var(--red);margin-top:4px;display:none;}
+.form-error.show{display:block;}
+
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.section-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--navy);}
+.section-sub{font-size:13px;color:var(--gray-600);margin-top:2px;}
+
+.progress-bar{height:6px;background:var(--gray-100);border-radius:10px;overflow:hidden;margin-top:6px;}
+.progress-fill{height:100%;border-radius:10px;transition:width .6s ease;}
+
+.kamar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
+.kamar-card{background:white;border:2px solid var(--gray-200);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;text-align:center;}
+.kamar-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.kamar-card.available{border-color:#A7F3D0;background:#F0FDF4;}
+.kamar-card.available:hover{border-color:var(--green);}
+.kamar-card.occupied{border-color:#FECACA;background:#FFF5F5;}
+.kamar-card.reserved{border-color:#FED7AA;background:#FFFBEB;}
+.kamar-number{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.kamar-status{font-size:11.5px;font-weight:600;}
+.kamar-card.available .kamar-status{color:var(--green);}
+.kamar-card.occupied .kamar-status{color:var(--red);}
+.kamar-card.reserved .kamar-status{color:var(--amber);}
+.kamar-dot{width:10px;height:10px;border-radius:50%;margin:8px auto 4px;}
+.kamar-card.available .kamar-dot{background:var(--green);}
+.kamar-card.occupied .kamar-dot{background:var(--red);}
+.kamar-card.reserved .kamar-dot{background:var(--amber);}
+
+.legend{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--gray-600);font-weight:500;}
+.legend-dot{width:10px;height:10px;border-radius:50%;}
+
+.alert{padding:14px 16px;border-radius:var(--radius-sm);display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;font-size:13.5px;}
+.alert-info{background:#EFF6FF;border-left:3px solid var(--blue);color:#1E40AF;}
+.alert-success{background:#F0FDF4;border-left:3px solid var(--green);color:#065F46;}
+.alert-warning{background:#FFFBEB;border-left:3px solid var(--amber);color:#92400E;}
+.alert-error{background:#FEF2F2;border-left:3px solid var(--red);color:#991B1B;}
+
+.timeline{position:relative;padding-left:24px;}
+.timeline::before{content:'';position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:var(--gray-200);}
+.timeline-item{position:relative;margin-bottom:20px;}
+.timeline-dot{position:absolute;left:-20px;top:3px;width:14px;height:14px;border-radius:50%;border:2.5px solid white;}
+.timeline-dot.done{background:var(--green);box-shadow:0 0 0 2px var(--green);}
+.timeline-dot.active{background:var(--blue);box-shadow:0 0 0 2px var(--blue);}
+.timeline-dot.pending{background:var(--gray-400);box-shadow:0 0 0 2px var(--gray-400);}
+.timeline-title{font-size:13.5px;font-weight:600;color:var(--navy);}
+.timeline-meta{font-size:12px;color:var(--gray-600);margin-top:2px;}
+
+.briva-card{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 60%,#1E3F7A 100%);border-radius:16px;padding:24px;color:white;position:relative;overflow:hidden;}
+.briva-card::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:rgba(255,255,255,0.04);border-radius:50%;}
+.briva-card::after{content:'';position:absolute;bottom:-30px;right:40px;width:100px;height:100px;background:rgba(13,148,136,0.2);border-radius:50%;}
+.briva-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:4px;}
+.briva-number{font-family:'Fraunces',serif;font-size:26px;font-weight:700;letter-spacing:3px;margin-bottom:16px;position:relative;z-index:1;}
+.briva-info{display:flex;gap:32px;position:relative;z-index:1;}
+.briva-info-label{font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.5px;}
+.briva-info-value{font-size:14px;font-weight:600;}
+
+.tab-bar{display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:10px;margin-bottom:20px;}
+.tab-btn{flex:1;padding:8px 14px;border-radius:7px;border:none;background:none;font-size:13px;font-weight:500;color:var(--gray-600);cursor:pointer;transition:all .2s;font-family:inherit;}
+.tab-btn.active{background:white;color:var(--navy);font-weight:700;box-shadow:var(--shadow-sm);}
+
+.welcome-banner{background:linear-gradient(135deg,var(--navy) 0%,#1A3A6E 100%);border-radius:var(--radius);padding:24px 28px;color:white;margin-bottom:24px;position:relative;overflow:hidden;}
+.welcome-banner::after{content:'🏠';position:absolute;right:28px;top:50%;transform:translateY(-50%);font-size:64px;opacity:0.15;}
+.welcome-title{font-family:'Fraunces',serif;font-size:22px;font-weight:700;margin-bottom:4px;}
+.welcome-sub{font-size:13.5px;color:rgba(255,255,255,0.65);}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(11,29,58,0.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.modal-overlay.open{display:flex;animation:fadeIn .2s ease;}
+.modal{background:white;border-radius:16px;width:90%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.2);}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:16px;font-weight:700;color:var(--navy);}
+.modal-close{width:30px;height:30px;border-radius:8px;border:none;background:var(--gray-100);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.modal-close:hover{background:var(--gray-200);}
+.modal-body{padding:20px 24px;}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:10px;}
+
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--navy);color:white;padding:12px 18px;border-radius:10px;font-size:13.5px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-lg);animation:slideUp .3s ease;min-width:260px;}
+.toast.success{background:#065F46;}.toast.error{background:#991B1B;}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:10px;}
+
+.keluhan-card{background:white;border:1px solid var(--gray-200);border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:box-shadow .2s;}
+.keluhan-card:hover{box-shadow:var(--shadow);}
+.keluhan-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.keluhan-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.keluhan-desc{font-size:13px;color:var(--gray-600);line-height:1.5;}
+.keluhan-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;}
+
+.rule-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--gray-100);}
+.rule-item:last-child{border-bottom:none;}
+.rule-number{width:26px;height:26px;background:var(--navy);color:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;}
+
+/* ══ LOGIN MODAL ══ */
+.login-modal{max-width:420px;}
+.login-role-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.login-role-btn{padding:14px 10px;border:2px solid var(--gray-200);border-radius:10px;background:white;cursor:pointer;text-align:center;transition:all .2s;font-family:inherit;}
+.login-role-btn:hover{border-color:var(--blue);background:#EFF6FF;}
+.login-role-btn.selected{border-color:var(--blue);background:#EFF6FF;}
+.login-role-btn .role-icon{font-size:26px;margin-bottom:6px;}
+.login-role-btn .role-name{font-size:13px;font-weight:700;color:var(--navy);}
+.login-role-btn .role-desc{font-size:11px;color:var(--gray-600);margin-top:2px;}
+.demo-hint{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--gray-600);margin-bottom:16px;line-height:1.7;}
+
+/* ══ PUBLIC HERO ══ */
+.pub-hero{background:linear-gradient(135deg,var(--navy) 0%,#1A3A6E 100%);border-radius:20px;padding:48px 40px;color:white;margin-bottom:28px;position:relative;overflow:hidden;}
+.pub-hero::before{content:'🏠';position:absolute;right:48px;top:50%;transform:translateY(-50%);font-size:110px;opacity:0.08;}
+.pub-hero-tag{display:inline-block;background:rgba(13,148,136,0.3);color:var(--teal-light);font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:14px;border:1px solid rgba(20,184,166,0.3);}
+.pub-hero-title{font-family:'Fraunces',serif;font-size:36px;font-weight:700;line-height:1.15;margin-bottom:12px;}
+.pub-hero-sub{font-size:15px;color:rgba(255,255,255,0.7);max-width:520px;line-height:1.6;margin-bottom:24px;}
+.pub-hero-actions{display:flex;gap:10px;flex-wrap:wrap;}
+
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;}
+.feature-card{background:white;border:1px solid var(--gray-200);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);transition:all .2s;}
+.feature-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.feature-icon{font-size:28px;margin-bottom:10px;}
+.feature-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:5px;}
+.feature-desc{font-size:12.5px;color:var(--gray-600);line-height:1.5;}
+
+@media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr);}.grid-2{grid-template-columns:1fr;}.feature-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:640px){.feature-grid{grid-template-columns:1fr;}.pub-hero-title{font-size:26px;}.pub-content{padding:16px;}.pub-hero{padding:28px 20px;}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     PUBLIC SHELL — Default landing page
+     Tampilan untuk umum / calon penghuni
+     ═══════════════════════════════════════════ -->
+<div id="public-shell">
+  <header class="pub-topbar" role="banner">
+    <div class="pub-brand">
+      <div class="pub-brand-icon" aria-hidden="true">🏠</div>
+      <div>
+        <div class="pub-brand-name">SIAR</div>
+        <div class="pub-brand-sub">Sistem Informasi Asrama Undiksha</div>
+      </div>
+    </div>
+    <nav class="pub-topbar-right" role="navigation" aria-label="Navigasi utama">
+      <div class="pub-nav" role="list">
+        <button class="pub-nav-btn active" role="listitem" onclick="pubNav('beranda',this)" aria-current="page">Beranda</button>
+        <button class="pub-nav-btn" role="listitem" onclick="pubNav('kamar',this)">Kamar</button>
+        <button class="pub-nav-btn" role="listitem" onclick="pubNav('peraturan',this)">Peraturan</button>
+        <button class="pub-nav-btn" role="listitem" onclick="pubNav('cara-daftar',this)">Cara Daftar</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-login')" aria-label="Masuk ke akun SIAR">
+        🔐 Masuk
+      </button>
+    </nav>
+  </header>
+
+  <main class="pub-content" role="main" id="pub-main">
+
+    <!-- BERANDA -->
+    <div class="pub-page active" id="pub-beranda">
+      <div class="pub-hero">
+        <div class="pub-hero-tag">Asrama Resmi Undiksha · Singaraja</div>
+        <h1 class="pub-hero-title">Tempat Tinggal Nyaman<br>untuk Mahasiswa Undiksha</h1>
+        <p class="pub-hero-sub">Hunian aman, terjangkau, dan dekat kampus. Dilengkapi fasilitas internet, keamanan 24 jam, serta komunitas yang suportif untuk menunjang kehidupan akademik Anda.</p>
+        <div class="pub-hero-actions">
+          <button class="btn btn-primary" onclick="openModal('modal-daftar')">📝 Daftar Sekarang</button>
+          <button class="btn btn-ghost" onclick="pubNav('kamar', document.querySelectorAll('.pub-nav-btn')[1])">🛏️ Lihat Kamar Tersedia</button>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card"><div class="feature-icon">📶</div><div class="feature-title">WiFi Berkecepatan Tinggi</div><div class="feature-desc">Koneksi internet stabil untuk mendukung kegiatan belajar dan tugas kuliah kapan saja.</div></div>
+        <div class="feature-card"><div class="feature-icon">🔒</div><div class="feature-title">Keamanan 24 Jam</div><div class="feature-desc">Sistem kartu akses, CCTV, dan petugas keamanan menjaga kenyamanan seluruh penghuni.</div></div>
+        <div class="feature-card"><div class="feature-icon">🎓</div><div class="feature-title">Dekat Kampus</div><div class="feature-desc">Jarak 8.5 km dari Kampus Utama Undiksha. Hemat waktu dan biaya transportasi setiap hari.</div></div>
+        <div class="feature-card"><div class="feature-icon">💳</div><div class="feature-title">Pembayaran Mudah via BRIVA</div><div class="feature-desc">Transfer via nomor BRIVA unik per penghuni — otomatis terkonfirmasi, tanpa antri, tanpa repot.</div></div>
+        <div class="feature-card"><div class="feature-icon">🔧</div><div class="feature-title">Laporan Fasilitas Online</div><div class="feature-desc">Kerusakan fasilitas? Laporkan langsung lewat aplikasi dan pantau proses perbaikannya secara real-time.</div></div>
+        <div class="feature-card"><div class="feature-icon">🤝</div><div class="feature-title">Komunitas Aktif</div><div class="feature-desc">Kegiatan rutin, kerja bakti, dan lingkungan yang mendukung pertumbuhan akademik dan sosial.</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><div class="card-title">📍 Lokasi & Jarak ke Kampus</div></div>
+        <div class="card-body">
+          <div class="alert alert-info" style="margin-bottom:16px;">📍 Jl. Udayana No.11, Singaraja, Bali — mudah dijangkau dari semua kampus Undiksha.</div>
+          <div class="grid-2" style="gap:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--gray-50);border-radius:8px;"><span style="font-size:13.5px;">🎓 Kampus Utama Undiksha</span><strong>8.5 km · ~15 menit</strong></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--gray-50);border-radius:8px;"><span style="font-size:13.5px;">🎓 Kampus  FBS</span><strong>9 km · ~17 menit</strong></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--gray-50);border-radius:8px;"><span style="font-size:13.5px;">🏪 Minimarket terdekat</span><strong>2 km · ~5 menit</strong></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--gray-50);border-radius:8px;"><span style="font-size:13.5px;">🍜 Warung makan</span><strong>150 m · ~2 menit</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:36px;background:white;border-radius:var(--radius);border:1px solid var(--gray-200);">
+        <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--navy);margin-bottom:8px;">Tertarik Tinggal di Sini?</div>
+        <p style="font-size:14px;color:var(--gray-600);margin-bottom:20px;">Masih tersedia beberapa kamar untuk semester ini. Daftar sekarang sebelum kehabisan.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="openModal('modal-daftar')">📝 Daftar Sekarang</button>
+          <button class="btn btn-outline" onclick="pubNav('kamar', document.querySelectorAll('.pub-nav-btn')[1])">Lihat Ketersediaan Kamar →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KAMAR (PUBLIC) -->
+    <div class="pub-page" id="pub-kamar">
+      <div class="section-header">
+        <div><h1 class="section-title">🛏️ Ketersediaan Kamar</h1><p class="section-sub">Status kamar real-time — pilih lantai untuk melihat detail</p></div>
+        <button class="btn btn-primary" onclick="openModal('modal-daftar')">📝 Daftar & Pilih Kamar</button>
+      </div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><div class="card-title">💰 Tipe Kamar & Harga</div></div>
+        <div class="card-body" style="padding:0;">
+          <table>
+            <thead><tr><th>Tipe</th><th>Fasilitas</th><th>Harga/Bulan</th><th>Tersedia</th></tr></thead>
+            <tbody>
+              <tr><td><strong>VIP (Lantai 1)</strong></td><td>AC, WiFi, Kamar Mandi Dalam</td><td><strong>Rp 650.000</strong></td><td><span class="badge badge-amber">3 kamar</span></td></tr>
+              <tr><td><strong>Standar (Lantai 2–3)</strong></td><td>Kipas, WiFi, KM Bersama</td><td><strong>Rp 450.000</strong></td><td><span class="badge badge-green">5 kamar</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tab-bar" style="max-width:400px;" role="tablist">
+        <button class="tab-btn active" role="tab" aria-selected="true" onclick="showFloor('1',this,'pub-floor-info','pub-kamar-grid','pub-av','pub-oc','pub-rs','pub-bar')">Lantai 1 (VIP)</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="showFloor('2',this,'pub-floor-info','pub-kamar-grid','pub-av','pub-oc','pub-rs','pub-bar')">Lantai 2</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="showFloor('3',this,'pub-floor-info','pub-kamar-grid','pub-av','pub-oc','pub-rs','pub-bar')">Lantai 3</button>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Tersedia</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Terisi</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Dipesan</div>
+      </div>
+      <div id="pub-floor-info" class="alert alert-info" style="max-width:500px;margin-bottom:16px;">💎 <strong>Lantai 1 (VIP)</strong> — AC + WiFi eksklusif · Rp 650.000/bulan</div>
+      <div class="kamar-grid" id="pub-kamar-grid"></div>
+      <div style="margin-top:20px;" class="card">
+        <div class="card-header"><div class="card-title">📊 Ringkasan Ketersediaan</div></div>
+        <div class="card-body">
+          <div class="grid-3">
+            <div style="text-align:center;padding:12px;"><div style="font-size:28px;font-weight:700;color:var(--green);" id="pub-av">-</div><div style="font-size:13px;color:var(--gray-600);">Tersedia</div></div>
+            <div style="text-align:center;padding:12px;"><div style="font-size:28px;font-weight:700;color:var(--red);" id="pub-oc">-</div><div style="font-size:13px;color:var(--gray-600);">Terisi</div></div>
+            <div style="text-align:center;padding:12px;"><div style="font-size:28px;font-weight:700;color:var(--amber);" id="pub-rs">-</div><div style="font-size:13px;color:var(--gray-600);">Dipesan</div></div>
+          </div>
+          <div class="progress-bar" style="height:10px;margin-top:4px;"><div class="progress-fill" id="pub-bar" style="width:0%;background:linear-gradient(90deg,var(--blue),var(--teal));"></div></div>
+          <div style="text-align:right;font-size:12px;color:var(--gray-600);margin-top:4px;" id="pub-pct"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERATURAN (PUBLIC) -->
+    <div class="pub-page" id="pub-peraturan">
+      <div class="section-header"><div><h1 class="section-title">📜 Peraturan & Tata Tertib Asrama</h1><p class="section-sub">Terakhir diperbarui: 1 Januari 2026</p></div></div>
+      <div class="grid-2">
+        <div>
+          <div class="card" style="margin-bottom:16px;"><div class="card-header"><div class="card-title">⏰ Jam dan Kegiatan</div></div><div class="card-body"><div class="rule-item"><div class="rule-number">1</div><div><strong>Jam Malam:</strong> Penghuni wajib berada di asrama paling lambat pukul 22.00 WITA setiap hari.</div></div><div class="rule-item"><div class="rule-number">2</div><div><strong>Jam Belajar:</strong> Suasana tenang wajib dijaga setiap pukul 19.00–21.00 WITA.</div></div><div class="rule-item"><div class="rule-number">3</div><div><strong>Apel Pagi:</strong> Penghuni wajib mengikuti apel pagi setiap Senin pukul 06.30 WITA.</div></div><div class="rule-item"><div class="rule-number">4</div><div><strong>Izin Menginap di Luar:</strong> Wajib mengajukan izin tertulis kepada pembina minimal 1 hari sebelumnya.</div></div></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">🧹 Kebersihan & Fasilitas</div></div><div class="card-body"><div class="rule-item"><div class="rule-number">5</div><div><strong>Kebersihan Kamar:</strong> Penghuni bertanggung jawab menjaga kebersihan kamar masing-masing.</div></div><div class="rule-item"><div class="rule-number">6</div><div><strong>Kerja Bakti:</strong> Wajib mengikuti kerja bakti bersama setiap Sabtu pagi.</div></div><div class="rule-item"><div class="rule-number">7</div><div><strong>Fasilitas Bersama:</strong> Dilarang merusak atau memindahkan fasilitas asrama.</div></div></div></div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:16px;"><div class="card-header"><div class="card-title">💰 Pembayaran</div></div><div class="card-body"><div class="rule-item"><div class="rule-number">8</div><div><strong>Tenggat Pembayaran:</strong> Iuran bulanan wajib dibayar paling lambat tanggal 5 setiap bulan.</div></div><div class="rule-item"><div class="rule-number">9</div><div><strong>Denda Keterlambatan:</strong> Keterlambatan dikenakan denda Rp 10.000/hari.</div></div><div class="rule-item"><div class="rule-number">10</div><div><strong>Bukti Pembayaran:</strong> Simpan bukti transfer. Status otomatis diperbarui oleh sistem.</div></div></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">🚫 Larangan</div></div><div class="card-body"><div class="rule-item"><div class="rule-number">11</div><div>Dilarang membawa tamu lawan jenis ke dalam kamar.</div></div><div class="rule-item"><div class="rule-number">12</div><div>Dilarang membawa, menyimpan, atau mengonsumsi minuman keras dan narkoba.</div></div><div class="rule-item"><div class="rule-number">13</div><div>Dilarang merokok di dalam kamar dan gedung asrama.</div></div><div class="rule-item"><div class="rule-number">14</div><div>Dilarang memelihara hewan peliharaan di lingkungan asrama.</div></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARA DAFTAR (PUBLIC) -->
+    <div class="pub-page" id="pub-cara-daftar">
+      <div class="section-header"><div><h1 class="section-title">📋 Cara Mendaftar</h1><p class="section-sub">Proses pendaftaran mudah, seluruhnya online</p></div><button class="btn btn-primary" onclick="openModal('modal-daftar')">📝 Mulai Daftar</button></div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-body">
+          <div style="display:flex;gap:0;flex-wrap:wrap;">
+            <div style="flex:1;min-width:140px;text-align:center;padding:24px 16px;"><div style="width:52px;height:52px;background:var(--blue);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;margin:0 auto 12px;">1</div><div style="font-weight:700;font-size:14px;margin-bottom:6px;">Isi Formulir</div><div style="font-size:12.5px;color:var(--gray-600);line-height:1.5;">Lengkapi data diri secara online melalui tombol "Daftar Sekarang"</div></div>
+            <div style="flex:1;min-width:140px;text-align:center;padding:24px 16px;"><div style="width:52px;height:52px;background:var(--teal);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;margin:0 auto 12px;">2</div><div style="font-weight:700;font-size:14px;margin-bottom:6px;">Upload Dokumen</div><div style="font-size:12.5px;color:var(--gray-600);line-height:1.5;">KTM, KTP, dan Surat Persetujuan Orang Tua</div></div>
+            <div style="flex:1;min-width:140px;text-align:center;padding:24px 16px;"><div style="width:52px;height:52px;background:var(--amber);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;margin:0 auto 12px;">3</div><div style="font-weight:700;font-size:14px;margin-bottom:6px;">Pilih Kamar</div><div style="font-size:12.5px;color:var(--gray-600);line-height:1.5;">Lihat denah dan pilih kamar yang masih kosong</div></div>
+            <div style="flex:1;min-width:140px;text-align:center;padding:24px 16px;"><div style="width:52px;height:52px;background:var(--green);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;margin:0 auto 12px;">4</div><div style="font-weight:700;font-size:14px;margin-bottom:6px;">Bayar DP</div><div style="font-size:12.5px;color:var(--gray-600);line-height:1.5;">Transfer ke nomor BRIVA yang dikirim ke WhatsApp Anda</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="alert alert-info">ℹ️ Setelah pendaftaran disetujui, Anda akan menerima <strong>akun login SIAR</strong> untuk memantau pembayaran, mengajukan keluhan, dan mengakses informasi asrama secara lengkap.</div>
+    </div>
+
+  </main>
+</div><!-- end public-shell -->
+
+
+<!-- ═══════════════════════════════════════════
+     APP SHELL — Tampilan setelah login
+     Penghuni & Pembina (terpisah)
+     ═══════════════════════════════════════════ -->
+<div id="app-shell">
+  <nav class="sidebar" role="navigation" aria-label="Menu utama">
+    <div class="sidebar-brand">
+      <div class="brand-logo"><div class="brand-icon" aria-hidden="true">🏠</div><span class="brand-name">SIAR</span></div>
+      <div class="brand-sub">Sistem Informasi Asrama Undiksha</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-card">
+        <div class="user-avatar" id="avatar-text" aria-hidden="true">A</div>
+        <div><div class="user-name" id="user-display-name">–</div><div class="user-role" id="user-display-role">–</div></div>
+      </div>
+    </div>
+    <div class="sidebar-nav" id="sidebar-nav" role="list"></div>
+    <div class="sidebar-footer">
+      <button class="nav-item" style="color:rgba(255,255,255,0.5);" onclick="doLogout()" aria-label="Keluar dari akun">
+        <span class="nav-icon" aria-hidden="true">🚪</span> Keluar
+      </button>
+    </div>
+  </nav>
+
+  <div class="main" role="main">
+    <header class="topbar" role="banner">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-right">
+        <button class="topbar-notif" onclick="navigate('notifikasi')" aria-label="Notifikasi (ada notifikasi baru)">🔔<div class="notif-dot" aria-hidden="true"></div></button>
+        <div style="font-size:13px;color:var(--gray-600);">Asrama Undiksha Singaraja</div>
+      </div>
+    </header>
+
+    <!-- ── DASHBOARD PENGHUNI ── -->
+    <div class="page" id="page-dashboard" role="region" aria-label="Dashboard Penghuni">
+      <div class="welcome-banner"><div class="welcome-title">Halo, Ari 👋</div><div class="welcome-sub">Kamar A-204 · Semester 3 · Asrama Putra Blok A</div></div>
+      <div class="stats-grid">
+        <div class="stat-card blue"><div class="stat-icon blue">💳</div><div class="stat-value">Lunas</div><div class="stat-label">Status Pembayaran Juni</div><div class="stat-change up">✓ Dibayar 3 Juni 2026</div></div>
+        <div class="stat-card teal"><div class="stat-icon teal">🛏️</div><div class="stat-value">A-204</div><div class="stat-label">Nomor Kamar</div><div class="stat-change" style="color:var(--gray-600);">Lantai 2 · Blok A</div></div>
+        <div class="stat-card amber"><div class="stat-icon amber">📋</div><div class="stat-value">2</div><div class="stat-label">Keluhan Aktif</div><div class="stat-change down">1 belum diproses</div></div>
+        <div class="stat-card red"><div class="stat-icon red">📅</div><div class="stat-value">27 hari</div><div class="stat-label">Tagihan Berikutnya</div><div class="stat-change" style="color:var(--gray-600);">Jatuh tempo 1 Juli</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">💳 BRIVA Pembayaran Saya</div><div style="font-size:12px;color:var(--gray-400);margin-top:2px;">Nomor unik milik Anda</div></div><button class="btn btn-outline btn-sm" onclick="showToast('Nomor BRIVA disalin!','success')">📋 Salin</button></div>
+          <div class="card-body">
+            <div class="briva-card"><div class="briva-label">Nomor BRIVA Pribadi</div><div class="briva-number">033 8001 2847 3921</div><div class="briva-info"><div><div class="briva-info-label">Nama</div><div class="briva-info-value">Ari Pratama</div></div><div><div class="briva-info-label">Tagihan Juli</div><div class="briva-info-value">Rp 450.000</div></div><div><div class="briva-info-label">Jatuh Tempo</div><div class="briva-info-value">1 Juli 2026</div></div></div></div>
+            <div class="alert alert-success" style="margin-top:14px;margin-bottom:0;">✅ Pembayaran Juni sudah terkonfirmasi otomatis.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📋 Keluhan Terbaru Saya</div><button class="btn btn-primary btn-sm" onclick="navigate('keluhan')">+ Lapor</button></div>
+          <div class="card-body" style="padding-top:12px;">
+            <div class="keluhan-card"><div class="keluhan-meta"><span class="badge badge-amber">⏳ Diproses</span><span style="font-size:11.5px;color:var(--gray-400);">2 hari lalu</span></div><div class="keluhan-title">Lampu kamar mati</div><div class="keluhan-desc">Lampu utama kamar A-204 sudah mati sejak 1 Juni 2026.</div><div style="margin-top:10px;"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-600);margin-bottom:4px;"><span>Progress perbaikan</span><span>50%</span></div><div class="progress-bar"><div class="progress-fill" style="width:50%;background:linear-gradient(90deg,var(--amber),#FCD34D);"></div></div></div></div>
+            <div class="keluhan-card"><div class="keluhan-meta"><span class="badge badge-red">🔴 Belum Diproses</span><span style="font-size:11.5px;color:var(--gray-400);">Hari ini</span></div><div class="keluhan-title">Wastafel kamar mandi bocor</div><div class="keluhan-desc">Terdapat kebocoran kecil di wastafel kamar mandi lantai 2.</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📣 Pengumuman Terbaru</div></div>
+          <div class="card-body" style="padding-top:12px;">
+            <div class="alert alert-warning">📌 <strong>Kerja Bakti</strong> — Sabtu, 7 Juni 2026 pukul 07.00 WITA. Wajib hadir.</div>
+            <div class="alert alert-info">📌 <strong>Jadwal Pembayaran Juli</strong> — Dibuka mulai 25 Juni 2026.</div>
+            <div class="alert alert-success">✅ <strong>WiFi Kembali Normal</strong> — Gangguan sudah diperbaiki per 2 Juni 2026.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📜 Riwayat Pembayaran</div></div>
+          <div class="card-body" style="padding:0;">
+            <table><thead><tr><th>Bulan</th><th>Jumlah</th><th>Status</th><th>Tanggal</th></tr></thead><tbody>
+              <tr><td>Juni 2026</td><td>Rp 450.000</td><td><span class="badge badge-green">✓ Lunas</span></td><td>3 Jun</td></tr>
+              <tr><td>Mei 2026</td><td>Rp 450.000</td><td><span class="badge badge-green">✓ Lunas</span></td><td>1 Mei</td></tr>
+              <tr><td>Apr 2026</td><td>Rp 450.000</td><td><span class="badge badge-green">✓ Lunas</span></td><td>2 Apr</td></tr>
+              <tr><td>Mar 2026</td><td>Rp 450.000</td><td><span class="badge badge-amber">⚠ Terlambat</span></td><td>5 Mar</td></tr>
+            </tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── KELUHAN ── -->
+    <div class="page" id="page-keluhan" role="region" aria-label="Keluhan dan Kerusakan">
+      <div class="section-header"><div><h1 class="section-title">📋 Keluhan & Kerusakan</h1><p class="section-sub">Laporkan kerusakan fasilitas kamar atau area asrama</p></div><button class="btn btn-primary" onclick="openModal('modal-keluhan')">+ Laporan Baru</button></div>
+      <div class="tab-bar" role="tablist">
+        <button class="tab-btn active" role="tab" aria-selected="true" onclick="filterKeluhan('semua',this,'keluhan-list')">Semua</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="filterKeluhan('belum',this,'keluhan-list')">Belum Diproses</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="filterKeluhan('proses',this,'keluhan-list')">Diproses</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="filterKeluhan('selesai',this,'keluhan-list')">Selesai</button>
+      </div>
+      <div id="keluhan-list">
+        <div class="keluhan-card" data-status="proses"><div class="keluhan-meta"><span class="badge badge-amber">⏳ Diproses</span><span class="badge badge-blue">💡 Listrik</span><span style="font-size:11.5px;color:var(--gray-400);">2 hari lalu · Kamar A-204</span></div><div class="keluhan-title">Lampu kamar mati</div><div class="keluhan-desc">Lampu utama kamar A-204 sudah mati sejak 1 Juni 2026. Sudah dilaporkan ke pembina sebelumnya.</div><div style="margin:12px 0 8px;"><div class="timeline"><div class="timeline-item"><div class="timeline-dot done"></div><div class="timeline-title">Laporan diterima</div><div class="timeline-meta">1 Jun 2026 · 09.00 WITA</div></div><div class="timeline-item"><div class="timeline-dot active"></div><div class="timeline-title">Teknisi dijadwalkan</div><div class="timeline-meta">3 Jun 2026 · Estimasi perbaikan: 5 Jun</div></div><div class="timeline-item"><div class="timeline-dot pending"></div><div class="timeline-title">Perbaikan selesai</div><div class="timeline-meta">Menunggu...</div></div></div></div><div class="keluhan-footer"><span style="font-size:12px;color:var(--gray-600);">Ari Pratama</span><button class="btn btn-outline btn-sm" onclick="showToast('Notifikasi aktif untuk keluhan ini.','success')">🔔 Pantau</button></div></div>
+        <div class="keluhan-card" data-status="belum"><div class="keluhan-meta"><span class="badge badge-red">🔴 Belum Diproses</span><span class="badge badge-teal">🚿 Air & Sanitasi</span><span style="font-size:11.5px;color:var(--gray-400);">Hari ini · Kamar A-204</span></div><div class="keluhan-title">Wastafel kamar mandi bocor</div><div class="keluhan-desc">Terdapat kebocoran kecil di bawah wastafel kamar mandi lantai 2, air menetes terus-menerus.</div><div class="keluhan-footer"><span style="font-size:12px;color:var(--gray-600);">Baru dilaporkan</span><button class="btn btn-outline btn-sm">📎 Lihat Foto</button></div></div>
+        <div class="keluhan-card" data-status="selesai"><div class="keluhan-meta"><span class="badge badge-green">✅ Selesai</span><span class="badge badge-gray">📶 Internet</span><span style="font-size:11.5px;color:var(--gray-400);">5 hari lalu · Area Umum</span></div><div class="keluhan-title">WiFi sangat lambat di lantai 2</div><div class="keluhan-desc">Koneksi hampir tidak bisa digunakan, terutama malam hari pukul 19.00–22.00 WITA.</div><div class="keluhan-footer"><span style="font-size:12px;color:var(--green);">✓ Diperbaiki 2 Juni 2026</span><span class="badge badge-green">Selesai dalam 3 hari</span></div></div>
+      </div>
+    </div>
+
+    <!-- ── PEMBAYARAN ── -->
+    <div class="page" id="page-pembayaran" role="region" aria-label="Pembayaran">
+      <div class="section-header"><div><h1 class="section-title">💳 Pembayaran Asrama</h1><p class="section-sub">Status dan riwayat pembayaran Anda</p></div></div>
+      <div class="grid-2" style="margin-bottom:20px;">
+        <div>
+          <div class="briva-card" style="margin-bottom:16px;"><div class="briva-label">Nomor BRIVA Pribadi Anda</div><div class="briva-number">033 8001 2847 3921</div><div class="briva-info"><div><div class="briva-info-label">Atas Nama</div><div class="briva-info-value">Ari Pratama</div></div><div><div class="briva-info-label">Kamar</div><div class="briva-info-value">A-204</div></div></div></div>
+          <div class="alert alert-info">ℹ️ Nomor BRIVA ini <strong>unik dan permanen</strong>. Transfer langsung tanpa perlu mencari di daftar PDF.</div>
+          <div class="card"><div class="card-header"><div class="card-title">📅 Tagihan Mendatang</div></div><div class="card-body"><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-100);"><div><div style="font-weight:600;font-size:14px;">Juli 2026</div><div style="font-size:12px;color:var(--gray-600);">Jatuh tempo: 1 Juli 2026</div></div><div style="text-align:right;"><div style="font-size:18px;font-weight:700;color:var(--navy);">Rp 450.000</div><span class="badge badge-amber">Belum Bayar</span></div></div><div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;color:var(--gray-600);"><span>Biaya kamar</span><span>Rp 350.000</span></div><div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;color:var(--gray-600);"><span>Iuran kebersihan</span><span>Rp 50.000</span></div><div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;color:var(--gray-600);"><span>Biaya listrik estimasi</span><span>Rp 50.000</span></div></div></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">📜 Riwayat Pembayaran</div></div><div class="card-body" style="padding:0;"><table><thead><tr><th>Bulan</th><th>Jumlah</th><th>Status</th><th>Tanggal Bayar</th></tr></thead><tbody><tr><td>Jun 2026</td><td>Rp 450.000</td><td><span class="badge badge-green">✓ Lunas</span></td><td>3 Jun</td></tr><tr><td>Mei 2026</td><td>Rp 450.000</td><td><span class="badge badge-green">✓ Lunas</span></td><td>1 Mei</td></tr><tr><td>Apr 2026</td><td>Rp 450.000</td><td><span class="badge badge-green">✓ Lunas</span></td><td>2 Apr</td></tr><tr><td>Mar 2026</td><td>Rp 450.000</td><td><span class="badge badge-amber">⚠ Terlambat</span></td><td>5 Mar</td></tr><tr><td>Feb 2026</td><td>Rp 450.000</td><td><span class="badge badge-green">✓ Lunas</span></td><td>1 Feb</td></tr><tr><td>Jan 2026</td><td>Rp 450.000</td><td><span class="badge badge-green">✓ Lunas</span></td><td>2 Jan</td></tr></tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- ── KAMAR (IN-APP) ── -->
+    <div class="page" id="page-kamar" role="region" aria-label="Info Kamar">
+      <div class="section-header"><div><h1 class="section-title">🛏️ Ketersediaan Kamar</h1><p class="section-sub">Status real-time — pilih lantai untuk melihat detail</p></div></div>
+      <div class="tab-bar" style="max-width:400px;" role="tablist">
+        <button class="tab-btn active" role="tab" aria-selected="true" onclick="showFloor('1',this,'app-floor-info','app-kamar-grid','app-av','app-oc','app-rs','app-bar')">Lantai 1 (VIP)</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="showFloor('2',this,'app-floor-info','app-kamar-grid','app-av','app-oc','app-rs','app-bar')">Lantai 2</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="showFloor('3',this,'app-floor-info','app-kamar-grid','app-av','app-oc','app-rs','app-bar')">Lantai 3</button>
+      </div>
+      <div class="legend"><div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Tersedia</div><div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Terisi</div><div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Dipesan</div></div>
+      <div id="app-floor-info" class="alert alert-info" style="max-width:500px;margin-bottom:16px;">💎 <strong>Lantai 1 (VIP)</strong> — AC + WiFi eksklusif · Rp 650.000/bulan</div>
+      <div class="kamar-grid" id="app-kamar-grid"></div>
+      <div style="margin-top:20px;" class="card"><div class="card-header"><div class="card-title">📊 Ringkasan Ketersediaan</div></div><div class="card-body"><div class="grid-3"><div style="text-align:center;padding:12px;"><div style="font-size:28px;font-weight:700;color:var(--green);" id="app-av">-</div><div style="font-size:13px;color:var(--gray-600);">Tersedia</div></div><div style="text-align:center;padding:12px;"><div style="font-size:28px;font-weight:700;color:var(--red);" id="app-oc">-</div><div style="font-size:13px;color:var(--gray-600);">Terisi</div></div><div style="text-align:center;padding:12px;"><div style="font-size:28px;font-weight:700;color:var(--amber);" id="app-rs">-</div><div style="font-size:13px;color:var(--gray-600);">Dipesan</div></div></div><div class="progress-bar" style="height:10px;margin-top:4px;"><div class="progress-fill" id="app-bar" style="width:0%;background:linear-gradient(90deg,var(--blue),var(--teal));"></div></div><div style="text-align:right;font-size:12px;color:var(--gray-600);margin-top:4px;" id="app-pct"></div></div></div>
+    </div>
+
+    <!-- ── PERATURAN (IN-APP) ── -->
+    <div class="page" id="page-peraturan" role="region" aria-label="Peraturan dan Tata Tertib">
+      <div class="section-header"><div><h1 class="section-title">📜 Peraturan & Tata Tertib Asrama</h1><p class="section-sub">Terakhir diperbarui: 1 Januari 2026</p></div></div>
+      <div class="grid-2"><div><div class="card" style="margin-bottom:16px;"><div class="card-header"><div class="card-title">⏰ Jam dan Kegiatan</div></div><div class="card-body"><div class="rule-item"><div class="rule-number">1</div><div><strong>Jam Malam:</strong> Wajib berada di asrama pukul 22.00 WITA.</div></div><div class="rule-item"><div class="rule-number">2</div><div><strong>Jam Belajar:</strong> Tenang wajib dijaga pukul 19.00–21.00 WITA.</div></div><div class="rule-item"><div class="rule-number">3</div><div><strong>Apel Pagi:</strong> Wajib setiap Senin pukul 06.30 WITA.</div></div><div class="rule-item"><div class="rule-number">4</div><div><strong>Izin Menginap:</strong> Ajukan izin tertulis minimal 1 hari sebelumnya.</div></div></div></div><div class="card"><div class="card-header"><div class="card-title">🧹 Kebersihan & Fasilitas</div></div><div class="card-body"><div class="rule-item"><div class="rule-number">5</div><div><strong>Kebersihan Kamar:</strong> Penghuni bertanggung jawab atas kamarnya masing-masing.</div></div><div class="rule-item"><div class="rule-number">6</div><div><strong>Kerja Bakti:</strong> Wajib setiap Sabtu pagi.</div></div><div class="rule-item"><div class="rule-number">7</div><div><strong>Fasilitas Bersama:</strong> Dilarang merusak atau memindahkan fasilitas asrama.</div></div></div></div></div><div><div class="card" style="margin-bottom:16px;"><div class="card-header"><div class="card-title">💰 Pembayaran</div></div><div class="card-body"><div class="rule-item"><div class="rule-number">8</div><div><strong>Tenggat:</strong> Iuran wajib dibayar maksimal tanggal 5 setiap bulan.</div></div><div class="rule-item"><div class="rule-number">9</div><div><strong>Denda:</strong> Keterlambatan dikenakan Rp 10.000/hari.</div></div><div class="rule-item"><div class="rule-number">10</div><div><strong>Bukti Bayar:</strong> Status otomatis diperbarui sistem setelah transfer.</div></div></div></div><div class="card"><div class="card-header"><div class="card-title">🚫 Larangan</div></div><div class="card-body"><div class="rule-item"><div class="rule-number">11</div><div>Dilarang membawa tamu lawan jenis ke dalam kamar.</div></div><div class="rule-item"><div class="rule-number">12</div><div>Dilarang membawa atau mengonsumsi minuman keras dan narkoba.</div></div><div class="rule-item"><div class="rule-number">13</div><div>Dilarang merokok di dalam kamar dan gedung asrama.</div></div><div class="rule-item"><div class="rule-number">14</div><div>Dilarang memelihara hewan peliharaan di lingkungan asrama.</div></div></div></div></div></div>
+    </div>
+
+    <!-- ── DASHBOARD PEMBINA ── -->
+    <div class="page" id="page-dashboard-pembina" role="region" aria-label="Dashboard Pembina">
+      <div class="welcome-banner"><div class="welcome-title">Dashboard Pembina 🔐</div><div class="welcome-sub">Asrama Undiksha · Total 80 penghuni aktif · Periode Juni 2026</div></div>
+      <div class="stats-grid">
+        <div class="stat-card blue"><div class="stat-icon blue">✅</div><div class="stat-value">63</div><div class="stat-label">Sudah Bayar</div><div class="stat-change up">78.7% dari total</div></div>
+        <div class="stat-card red"><div class="stat-icon red">⚠️</div><div class="stat-value">17</div><div class="stat-label">Belum Bayar</div><div class="stat-change down">Notifikasi terkirim</div></div>
+        <div class="stat-card amber"><div class="stat-icon amber">🔧</div><div class="stat-value">8</div><div class="stat-label">Keluhan Aktif</div><div class="stat-change down">3 belum diproses</div></div>
+        <div class="stat-card teal"><div class="stat-icon teal">🛏️</div><div class="stat-value">8</div><div class="stat-label">Kamar Kosong</div><div class="stat-change up">Dari total 30 kamar</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">⚠️ Belum Bayar Bulan Ini</div><button class="btn btn-primary btn-sm" onclick="showToast('Notifikasi terkirim ke 17 mahasiswa!','success')">📤 Kirim Notifikasi</button></div><div class="card-body" style="padding:0;"><table><thead><tr><th>Nama</th><th>Kamar</th><th>Tunggakan</th><th>Aksi</th></tr></thead><tbody><tr><td>Budi Santoso</td><td>A-102</td><td><span class="badge badge-red">2 bulan</span></td><td><button class="btn btn-outline btn-sm" onclick="showToast('Notifikasi terkirim ke Budi.','success')">Ingatkan</button></td></tr><tr><td>Citra Dewi</td><td>B-201</td><td><span class="badge badge-amber">1 bulan</span></td><td><button class="btn btn-outline btn-sm" onclick="showToast('Notifikasi terkirim ke Citra.','success')">Ingatkan</button></td></tr><tr><td>Dewa Nugraha</td><td>A-305</td><td><span class="badge badge-amber">1 bulan</span></td><td><button class="btn btn-outline btn-sm" onclick="showToast('Notifikasi terkirim ke Dewa.','success')">Ingatkan</button></td></tr><tr><td>Eka Putri</td><td>B-108</td><td><span class="badge badge-red">2 bulan</span></td><td><button class="btn btn-outline btn-sm" onclick="showToast('Notifikasi terkirim ke Eka.','success')">Ingatkan</button></td></tr><tr><td>Fajar Ardianto</td><td>A-210</td><td><span class="badge badge-amber">1 bulan</span></td><td><button class="btn btn-outline btn-sm" onclick="showToast('Notifikasi terkirim ke Fajar.','success')">Ingatkan</button></td></tr></tbody></table></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">🔧 Keluhan Perlu Ditindaklanjuti</div></div><div class="card-body" style="padding-top:12px;">
+          <div class="keluhan-card"><div class="keluhan-meta"><span class="badge badge-red">🔴 Belum Diproses</span><span style="font-size:11.5px;color:var(--gray-400);">A-204 · Hari ini</span></div><div class="keluhan-title">Wastafel bocor</div><div class="keluhan-footer"><span style="font-size:12px;">Ari Pratama</span><button class="btn btn-teal btn-sm" onclick="showToast('Keluhan diproses. Teknisi dijadwalkan.','success')">✓ Proses</button></div></div>
+          <div class="keluhan-card"><div class="keluhan-meta"><span class="badge badge-red">🔴 Belum Diproses</span><span style="font-size:11.5px;color:var(--gray-400);">KM Lt.2 · 1 hari lalu</span></div><div class="keluhan-title">Lampu kamar mandi mati</div><div class="keluhan-footer"><span style="font-size:12px;">Nana Sari</span><button class="btn btn-teal btn-sm" onclick="showToast('Keluhan diproses.','success')">✓ Proses</button></div></div>
+          <div class="keluhan-card"><div class="keluhan-meta"><span class="badge badge-amber">⏳ Diproses</span><span style="font-size:11.5px;color:var(--gray-400);">A-204 · 2 hari lalu</span></div><div class="keluhan-title">Lampu kamar mati</div><div class="keluhan-footer"><span style="font-size:12px;">Ari Pratama</span><button class="btn btn-outline btn-sm" onclick="showToast('Status: Selesai!','success')">✓ Selesai</button></div></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- ── KELUHAN PEMBINA ── -->
+    <div class="page" id="page-keluhan-pembina" role="region" aria-label="Keluhan Masuk">
+      <div class="section-header"><div><h1 class="section-title">🔧 Keluhan Masuk</h1><p class="section-sub">Semua laporan dari penghuni asrama</p></div></div>
+      <div class="tab-bar" role="tablist">
+        <button class="tab-btn active" role="tab" aria-selected="true" onclick="filterKeluhan('semua',this,'pb-klist')">Semua (8)</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="filterKeluhan('belum',this,'pb-klist')">Belum Diproses (3)</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="filterKeluhan('proses',this,'pb-klist')">Diproses (4)</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="filterKeluhan('selesai',this,'pb-klist')">Selesai (1)</button>
+      </div>
+      <div id="pb-klist">
+        <div class="keluhan-card" data-status="belum"><div class="keluhan-meta"><span class="badge badge-red">🔴 Belum Diproses</span><span class="badge badge-teal">🚿 Air</span><span style="font-size:11.5px;color:var(--gray-400);">A-204 · Hari ini</span></div><div class="keluhan-title">Wastafel kamar mandi bocor</div><div class="keluhan-desc">Kebocoran di bawah wastafel lantai 2, air menggenang di lantai.</div><div class="keluhan-footer"><span style="font-size:12px;">Ari Pratama</span><button class="btn btn-teal btn-sm" onclick="showToast('Keluhan diproses.','success')">✓ Proses</button></div></div>
+        <div class="keluhan-card" data-status="belum"><div class="keluhan-meta"><span class="badge badge-red">🔴 Belum Diproses</span><span class="badge badge-blue">💡 Listrik</span><span style="font-size:11.5px;color:var(--gray-400);">KM Lt.2 · 1 hari lalu</span></div><div class="keluhan-title">Lampu kamar mandi mati</div><div class="keluhan-desc">Lampu di kamar mandi bersama lantai 2 tidak menyala.</div><div class="keluhan-footer"><span style="font-size:12px;">Nana Sari</span><button class="btn btn-teal btn-sm" onclick="showToast('Keluhan diproses.','success')">✓ Proses</button></div></div>
+        <div class="keluhan-card" data-status="proses"><div class="keluhan-meta"><span class="badge badge-amber">⏳ Diproses</span><span class="badge badge-blue">💡 Listrik</span><span style="font-size:11.5px;color:var(--gray-400);">A-204 · 2 hari lalu</span></div><div class="keluhan-title">Lampu kamar mati</div><div class="keluhan-desc">Lampu utama kamar A-204 mati sejak 1 Juni. Teknisi dijadwalkan 5 Juni.</div><div class="keluhan-footer"><span style="font-size:12px;">Ari Pratama</span><button class="btn btn-outline btn-sm" onclick="showToast('Status: Selesai!','success')">✓ Selesai</button></div></div>
+        <div class="keluhan-card" data-status="selesai"><div class="keluhan-meta"><span class="badge badge-green">✅ Selesai</span><span class="badge badge-gray">📶 Internet</span><span style="font-size:11.5px;color:var(--gray-400);">5 hari lalu</span></div><div class="keluhan-title">WiFi lambat di lantai 2</div><div class="keluhan-desc">Koneksi lambat malam hari. Diperbaiki 2 Juni 2026.</div><div class="keluhan-footer"><span style="font-size:12px;color:var(--green);">✓ Selesai dalam 3 hari</span></div></div>
+      </div>
+    </div>
+
+    <!-- ── MONITOR PEMBAYARAN (PEMBINA) ── -->
+    <div class="page" id="page-pembayaran-pembina" role="region" aria-label="Monitor Pembayaran">
+      <div class="section-header"><div><h1 class="section-title">💳 Monitor Pembayaran</h1><p class="section-sub">Status pembayaran seluruh penghuni bulan ini</p></div><button class="btn btn-primary btn-sm" onclick="showToast('Laporan diekspor ke PDF!','success')">📄 Ekspor PDF</button></div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-card blue"><div class="stat-icon blue">✅</div><div class="stat-value">63</div><div class="stat-label">Sudah Bayar</div><div class="stat-change up">78.7%</div></div>
+        <div class="stat-card red"><div class="stat-icon red">⚠️</div><div class="stat-value">17</div><div class="stat-label">Belum Bayar</div><div class="stat-change down">21.3%</div></div>
+        <div class="stat-card teal"><div class="stat-icon teal">💰</div><div class="stat-value">28,35 jt</div><div class="stat-label">Total Terkumpul</div><div class="stat-change up">Juni 2026</div></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Daftar Penghuni Belum Bayar</div><button class="btn btn-primary btn-sm" onclick="showToast('Notifikasi massal terkirim!','success')">📤 Notifikasi Semua</button></div><div class="card-body" style="padding:0;"><table><thead><tr><th>Nama</th><th>Kamar</th><th>Tunggakan</th><th>No. HP</th><th>Aksi</th></tr></thead><tbody><tr><td>Budi Santoso</td><td>A-102</td><td><span class="badge badge-red">2 bulan</span></td><td>0812-xxxx</td><td><button class="btn btn-outline btn-sm" onclick="showToast('Notifikasi terkirim.','success')">Ingatkan</button></td></tr><tr><td>Citra Dewi</td><td>B-201</td><td><span class="badge badge-amber">1 bulan</span></td><td>0813-xxxx</td><td><button class="btn btn-outline btn-sm" onclick="showToast('Notifikasi terkirim.','success')">Ingatkan</button></td></tr><tr><td>Dewa Nugraha</td><td>A-305</td><td><span class="badge badge-amber">1 bulan</span></td><td>0819-xxxx</td><td><button class="btn btn-outline btn-sm" onclick="showToast('Notifikasi terkirim.','success')">Ingatkan</button></td></tr><tr><td>Eka Putri</td><td>B-108</td><td><span class="badge badge-red">2 bulan</span></td><td>0821-xxxx</td><td><button class="btn btn-outline btn-sm" onclick="showToast('Notifikasi terkirim.','success')">Ingatkan</button></td></tr></tbody></table></div></div>
+    </div>
+
+    <!-- ── NOTIFIKASI ── -->
+    <div class="page" id="page-notifikasi" role="region" aria-label="Notifikasi">
+      <div class="section-header"><div><h1 class="section-title">🔔 Notifikasi</h1><p class="section-sub">Informasi terbaru untuk Anda</p></div><button class="btn btn-outline btn-sm" onclick="showToast('Semua notifikasi ditandai sudah dibaca.','success')">✓ Tandai Semua Dibaca</button></div>
+      <div class="card"><div class="card-body" style="padding:0;">
+        <div style="padding:16px 20px;display:flex;gap:12px;border-bottom:1px solid var(--gray-100);background:#EFF6FF;" role="article"><div style="font-size:22px;" aria-hidden="true">💳</div><div style="flex:1;"><div style="font-weight:600;font-size:14px;color:var(--navy);">Pembayaran Bulan Juli Akan Dibuka</div><div style="font-size:13px;color:var(--gray-600);margin-top:3px;">Pembayaran iuran asrama bulan Juli 2026 akan dibuka mulai 25 Juni 2026.</div><div style="font-size:11.5px;color:var(--gray-400);margin-top:6px;">Hari ini · 08.00 WITA</div></div><div class="notif-dot" style="position:static;margin-top:5px;" aria-label="Belum dibaca"></div></div>
+        <div style="padding:16px 20px;display:flex;gap:12px;border-bottom:1px solid var(--gray-100);background:#FFFBEB;"><div style="font-size:22px;" aria-hidden="true">🔧</div><div><div style="font-weight:600;font-size:14px;color:var(--navy);">Update Keluhan: Lampu Kamar Diproses</div><div style="font-size:13px;color:var(--gray-600);margin-top:3px;">Keluhan lampu kamar A-204 dijadwalkan perbaikan pada 5 Juni 2026.</div><div style="font-size:11.5px;color:var(--gray-400);margin-top:6px;">3 Juni 2026 · 14.30 WITA</div></div></div>
+        <div style="padding:16px 20px;display:flex;gap:12px;border-bottom:1px solid var(--gray-100);"><div style="font-size:22px;" aria-hidden="true">📣</div><div><div style="font-weight:600;font-size:14px;color:var(--navy);">Pengumuman: Kerja Bakti Sabtu</div><div style="font-size:13px;color:var(--gray-600);margin-top:3px;">Seluruh penghuni wajib hadir kerja bakti Sabtu, 7 Juni 2026 pukul 07.00 WITA.</div><div style="font-size:11.5px;color:var(--gray-400);margin-top:6px;">2 Juni 2026 · 10.00 WITA</div></div></div>
+        <div style="padding:16px 20px;display:flex;gap:12px;"><div style="font-size:22px;" aria-hidden="true">✅</div><div><div style="font-weight:600;font-size:14px;color:var(--navy);">Pembayaran Juni Berhasil</div><div style="font-size:13px;color:var(--gray-600);margin-top:3px;">Pembayaran Rp 450.000 bulan Juni 2026 terkonfirmasi. Terima kasih!</div><div style="font-size:11.5px;color:var(--gray-400);margin-top:6px;">3 Juni 2026 · 09.15 WITA</div></div></div>
+      </div></div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+
+
+<!-- ═══════ MODAL: LOGIN ═══════ -->
+<div class="modal-overlay" id="modal-login" role="dialog" aria-modal="true" aria-labelledby="login-title">
+  <div class="modal login-modal">
+    <div class="modal-header">
+      <div><div class="modal-title" id="login-title">🔐 Masuk ke SIAR</div><div style="font-size:12px;color:var(--gray-400);margin-top:2px;">Sistem Informasi Asrama Undiksha</div></div>
+      <button class="modal-close" onclick="closeModal('modal-login')" aria-label="Tutup dialog login">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--gray-600);margin-bottom:14px;font-weight:600;">Pilih peran Anda:</p>
+      <div class="login-role-selector" role="radiogroup" aria-label="Pilih peran">
+        <button class="login-role-btn selected" id="role-btn-penghuni" onclick="selectRole('penghuni')" aria-pressed="true"><div class="role-icon">👤</div><div class="role-name">Penghuni</div><div class="role-desc">Mahasiswa yang tinggal di asrama</div></button>
+        <button class="login-role-btn" id="role-btn-pembina" onclick="selectRole('pembina')" aria-pressed="false"><div class="role-icon">🔐</div><div class="role-name">Pembina</div><div class="role-desc">Staf & pengelola asrama</div></button>
+      </div>
+      <div class="demo-hint" role="note">
+        <strong>Akun demo untuk mencoba:</strong><br>
+        👤 Penghuni → NIM: <strong>2201234</strong> · Sandi: <strong>ari123</strong><br>
+        🔐 Pembina → Username: <strong>leni</strong> · Sandi: <strong>pembina2026</strong>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="login-user" id="lbl-user">NIM</label>
+        <input type="text" class="form-input" id="login-user" placeholder="Masukkan NIM Anda" autocomplete="username" aria-labelledby="lbl-user" aria-required="true">
+        <div class="form-error" id="err-user" role="alert">NIM / username wajib diisi.</div>
+      </div>
+      <div class="form-group" style="margin-bottom:8px;">
+        <label class="form-label" for="login-pass">Kata Sandi</label>
+        <div style="position:relative;">
+          <input type="password" class="form-input" id="login-pass" placeholder="Masukkan kata sandi" autocomplete="current-password" aria-required="true" style="padding-right:44px;">
+          <button type="button" id="pw-toggle" onclick="togglePw()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;" aria-label="Tampilkan atau sembunyikan kata sandi">👁️</button>
+        </div>
+        <div class="form-error" id="err-pass" role="alert">Kata sandi wajib diisi.</div>
+        <div class="form-error" id="err-cred" role="alert">NIM/username atau kata sandi salah. Silakan coba lagi.</div>
+      </div>
+      <div style="text-align:right;margin-bottom:4px;"><button style="background:none;border:none;color:var(--blue);font-size:12.5px;cursor:pointer;font-family:inherit;" onclick="showToast('Hubungi pembina asrama untuk reset kata sandi.','info')">Lupa kata sandi?</button></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-login')">Batal</button>
+      <button class="btn btn-primary" onclick="doLogin()">Masuk →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: KELUHAN BARU ═══════ -->
+<div class="modal-overlay" id="modal-keluhan" role="dialog" aria-modal="true" aria-labelledby="kel-title">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="kel-title">📋 Laporan Keluhan Baru</div><button class="modal-close" onclick="closeModal('modal-keluhan')" aria-label="Tutup">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label" for="kel-kat">Kategori Keluhan</label><select class="form-select" id="kel-kat"><option>💡 Listrik (Lampu, Stop Kontak)</option><option>🚿 Air & Sanitasi (Bocor, Wastafel, Toilet)</option><option>📶 Internet & WiFi</option><option>🌬️ Pendingin / Kipas / AC</option><option>🚪 Pintu / Jendela / Kunci</option><option>🔧 Lainnya</option></select></div>
+      <div class="form-group"><label class="form-label" for="kel-lok">Lokasi Kerusakan</label><select class="form-select" id="kel-lok"><option>Kamar A-204 (Kamar Saya)</option><option>Kamar Mandi Lantai 2</option><option>Area Umum Lantai 2</option><option>Dapur Bersama</option><option>Lobi / Area Masuk</option></select></div>
+      <div class="form-group"><label class="form-label" for="kel-jdl">Judul Keluhan <span style="color:var(--red);">*</span></label><input type="text" class="form-input" id="kel-jdl" placeholder="Contoh: Lampu kamar mati sejak 3 hari lalu"><div class="form-error" id="err-jdl" role="alert">Judul keluhan wajib diisi.</div></div>
+      <div class="form-group"><label class="form-label" for="kel-dsc">Deskripsi Lengkap <span style="color:var(--red);">*</span></label><textarea class="form-textarea" id="kel-dsc" placeholder="Jelaskan kerusakan: kapan terjadi, kondisinya, dampaknya..."></textarea><div class="form-error" id="err-dsc" role="alert">Deskripsi wajib diisi.</div></div>
+      <div class="form-group"><label class="form-label">Tingkat Urgensi</label><div style="display:flex;gap:8px;" role="radiogroup"><label style="flex:1;padding:10px;border:1.5px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center;font-size:12.5px;font-weight:500;"><input type="radio" name="urgensi" value="rendah" style="display:none"> 🟢 Rendah</label><label style="flex:1;padding:10px;border:1.5px solid var(--amber);border-radius:8px;cursor:pointer;text-align:center;font-size:12.5px;font-weight:500;background:#FFFBEB;"><input type="radio" name="urgensi" value="sedang" checked style="display:none"> 🟡 Sedang</label><label style="flex:1;padding:10px;border:1.5px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center;font-size:12.5px;font-weight:500;"><input type="radio" name="urgensi" value="tinggi" style="display:none"> 🔴 Tinggi</label></div></div>
+      <div class="form-group" style="margin-bottom:0;"><label class="form-label">Foto Kerusakan <span style="color:var(--gray-400);font-weight:400;">(opsional)</span></label><div style="border:2px dashed var(--gray-200);border-radius:8px;padding:24px;text-align:center;cursor:pointer;color:var(--gray-600);font-size:13px;" onclick="showToast('Fitur upload foto aktif di versi final.','info')" role="button" tabindex="0">📷 Klik untuk unggah foto · Maks 3 foto, 5 MB</div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-keluhan')">Batal</button><button class="btn btn-primary" onclick="submitKeluhan()">📤 Kirim Laporan</button></div>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: PENDAFTARAN ═══════ -->
+<div class="modal-overlay" id="modal-daftar" role="dialog" aria-modal="true" aria-labelledby="daftar-title">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="daftar-title">📝 Formulir Pendaftaran Asrama</div><button class="modal-close" onclick="closeModal('modal-daftar')" aria-label="Tutup">✕</button></div>
+    <div class="modal-body">
+      <div class="grid-2" style="gap:12px;">
+        <div class="form-group"><label class="form-label" for="d-nama">Nama Lengkap</label><input type="text" class="form-input" id="d-nama" placeholder="Sesuai KTP"></div>
+        <div class="form-group"><label class="form-label" for="d-nim">NIM</label><input type="text" class="form-input" id="d-nim" placeholder="Nomor Induk Mahasiswa"></div>
+        <div class="form-group"><label class="form-label" for="d-prodi">Program Studi</label><input type="text" class="form-input" id="d-prodi" placeholder="Nama program studi"></div>
+        <div class="form-group"><label class="form-label" for="d-kampus">Kampus / Fakultas</label><select class="form-select" id="d-kampus"><option>Kampus Utama (Jl. Udayana)</option><option>Kampus FBS</option><option>Kampus FOK</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label" for="d-tipe">Tipe Kamar yang Diminati</label><select class="form-select" id="d-tipe"><option>VIP Lantai 1 (AC) — Rp 650.000/bulan</option><option>Standar Lantai 2–3 — Rp 450.000/bulan</option></select></div>
+      <div class="form-group" style="margin-bottom:0;"><label class="form-label" for="d-hp">Nomor HP / WhatsApp</label><input type="tel" class="form-input" id="d-hp" placeholder="08xxxxxxxxxx"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-daftar')">Batal</button><button class="btn btn-primary" onclick="submitDaftar()">Daftar →</button></div>
+  </div>
+</div>
+
+<div id="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+/* ══════════════════════════════════════
+   AUTH
+══════════════════════════════════════ */
+const ACCOUNTS = {
+  penghuni: { id:'penghuni', nim:'2201234', pass:'ari123',       name:'Ari Pratama',   role:'Penghuni Asrama · A-204', avatar:'A', home:'dashboard' },
+  pembina:  { id:'pembina',  nim:'leni',    pass:'pembina2026',  name:'Bu Leni',       role:'Pembina Asrama',          avatar:'L', home:'dashboard-pembina' },
+};
+
+let currentRole = null;
+let selectedRole = 'penghuni';
+
+function selectRole(r) {
+  selectedRole = r;
+  document.querySelectorAll('.login-role-btn').forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed','false'); });
+  const btn = document.getElementById('role-btn-' + r);
+  btn.classList.add('selected'); btn.setAttribute('aria-pressed','true');
+  const lbl = document.getElementById('lbl-user');
+  const inp = document.getElementById('login-user');
+  lbl.textContent = r === 'penghuni' ? 'NIM' : 'Username';
+  inp.placeholder = r === 'penghuni' ? 'Masukkan NIM Anda' : 'Masukkan username';
+  clearLoginErrors();
+}
+
+function clearLoginErrors() {
+  ['err-user','err-pass','err-cred'].forEach(id => document.getElementById(id).classList.remove('show'));
+  ['login-user','login-pass'].forEach(id => document.getElementById(id).classList.remove('error'));
+}
+
+function togglePw() {
+  const inp = document.getElementById('login-pass');
+  const btn = document.getElementById('pw-toggle');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; btn.setAttribute('aria-label','Sembunyikan kata sandi'); }
+  else { inp.type = 'password'; btn.textContent = '👁️'; btn.setAttribute('aria-label','Tampilkan kata sandi'); }
+}
+
+function doLogin() {
+  clearLoginErrors();
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  let ok = true;
+  if (!user) { document.getElementById('err-user').classList.add('show'); document.getElementById('login-user').classList.add('error'); ok = false; }
+  if (!pass) { document.getElementById('err-pass').classList.add('show'); document.getElementById('login-pass').classList.add('error'); ok = false; }
+  if (!ok) return;
+
+  const acc = ACCOUNTS[selectedRole];
+  if (user !== acc.nim || pass !== acc.pass) {
+    document.getElementById('err-cred').classList.add('show');
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-user').focus();
+    return;
+  }
+
+  closeModal('modal-login');
+  currentRole = selectedRole;
+  document.getElementById('user-display-name').textContent = acc.name;
+  document.getElementById('user-display-role').textContent = acc.role;
+  document.getElementById('avatar-text').textContent = acc.avatar;
+  renderSidebar(currentRole);
+
+  document.getElementById('public-shell').classList.add('hidden');
+  document.getElementById('app-shell').classList.add('active');
+
+  // init kamar grid for in-app view
+  const firstAppTab = document.querySelector('#page-kamar .tab-btn');
+  if (firstAppTab) showFloor('1', firstAppTab, 'app-floor-info','app-kamar-grid','app-av','app-oc','app-rs','app-bar');
+
+  navigate(acc.home);
+  showToast('Selamat datang, ' + acc.name + '! 👋', 'success');
+}
+
+function doLogout() {
+  currentRole = null;
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-pass').type = 'password';
+  document.getElementById('pw-toggle').textContent = '👁️';
+  clearLoginErrors();
+  document.getElementById('app-shell').classList.remove('active');
+  document.getElementById('public-shell').classList.remove('hidden');
+  pubNav('beranda', document.querySelector('.pub-nav-btn'));
+  showToast('Anda telah keluar dari SIAR.', 'info');
+}
+
+/* ══════════════════════════════════════
+   SIDEBAR NAV
+══════════════════════════════════════ */
+const NAV = {
+  penghuni: [
+    { id:'n-dash',   icon:'🏠', label:'Dashboard',          page:'dashboard' },
+    { id:'n-byr',    icon:'💳', label:'Pembayaran',          page:'pembayaran' },
+    { id:'n-kel',    icon:'📋', label:'Keluhan & Kerusakan', page:'keluhan', badge:2 },
+    { id:'n-kamar',  icon:'🛏️', label:'Info Kamar',          page:'kamar' },
+    { id:'n-per',    icon:'📜', label:'Peraturan Asrama',    page:'peraturan' },
+    { id:'n-notif',  icon:'🔔', label:'Notifikasi',          page:'notifikasi', badge:3 },
+  ],
+  pembina: [
+    { id:'p-dash',   icon:'📊', label:'Dashboard',            page:'dashboard-pembina' },
+    { id:'p-kel',    icon:'🔧', label:'Keluhan Masuk',         page:'keluhan-pembina', badge:8 },
+    { id:'p-byr',    icon:'💳', label:'Monitor Pembayaran',    page:'pembayaran-pembina' },
+    { id:'p-kamar',  icon:'🛏️', label:'Manajemen Kamar',       page:'kamar' },
+    { id:'p-per',    icon:'📜', label:'Peraturan',             page:'peraturan' },
+    { id:'p-notif',  icon:'🔔', label:'Notifikasi',            page:'notifikasi', badge:5 },
+  ],
+};
+
+function renderSidebar(role) {
+  document.getElementById('sidebar-nav').innerHTML = (NAV[role]||[]).map(item => `
+    <button class="nav-item" id="${item.id}" onclick="navigate('${item.page}')" role="listitem">
+      <span class="nav-icon" aria-hidden="true">${item.icon}</span>${item.label}
+      ${item.badge ? `<span class="nav-badge" aria-label="${item.badge} notifikasi">${item.badge}</span>` : ''}
+    </button>`).join('');
+}
+
+function navigate(pageId) {
+  document.querySelectorAll('#app-shell .page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-' + pageId);
+  if (pg) pg.classList.add('active');
+
+  document.querySelectorAll('#sidebar-nav .nav-item').forEach(n => { n.classList.remove('active'); n.removeAttribute('aria-current'); });
+  (NAV[currentRole]||[]).forEach(item => {
+    if (item.page === pageId) {
+      const el = document.getElementById(item.id);
+      if (el) { el.classList.add('active'); el.setAttribute('aria-current','page'); }
+    }
+  });
+
+  const titles = { 'dashboard':'Dashboard','dashboard-pembina':'Dashboard Pembina','pembayaran':'Pembayaran','pembayaran-pembina':'Monitor Pembayaran','keluhan':'Keluhan & Kerusakan','keluhan-pembina':'Keluhan Masuk','kamar':'Ketersediaan Kamar','peraturan':'Peraturan & Tata Tertib','notifikasi':'Notifikasi' };
+  document.getElementById('page-title').textContent = titles[pageId] || 'SIAR';
+}
+
+/* ══════════════════════════════════════
+   PUBLIC NAVIGATION
+══════════════════════════════════════ */
+function pubNav(id, btn) {
+  document.querySelectorAll('.pub-page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('pub-' + id);
+  if (pg) pg.classList.add('active');
+  document.querySelectorAll('.pub-nav-btn').forEach(b => { b.classList.remove('active'); b.removeAttribute('aria-current'); });
+  if (btn) { btn.classList.add('active'); btn.setAttribute('aria-current','page'); }
+}
+
+/* ══════════════════════════════════════
+   KAMAR FLOOR DATA
+══════════════════════════════════════ */
+const FLOORS = {
+  '1':{ info:'💎 <strong>Lantai 1 (VIP)</strong> — AC + WiFi eksklusif + Kamar Mandi Dalam · Rp 650.000/bulan', rooms:[{n:'A-101',s:'occupied'},{n:'A-102',s:'occupied'},{n:'A-103',s:'available'},{n:'A-104',s:'occupied'},{n:'A-105',s:'reserved'},{n:'A-106',s:'occupied'},{n:'A-107',s:'available'},{n:'A-108',s:'occupied'},{n:'A-109',s:'occupied'},{n:'A-110',s:'available'},{n:'A-111',s:'reserved'},{n:'A-112',s:'occupied'}]},
+  '2':{ info:'🛏️ <strong>Lantai 2 (Standar)</strong> — Kipas + WiFi + Kamar Mandi Bersama · Rp 450.000/bulan', rooms:[{n:'A-201',s:'occupied'},{n:'A-202',s:'occupied'},{n:'A-203',s:'available'},{n:'A-204',s:'occupied'},{n:'A-205',s:'occupied'},{n:'A-206',s:'available'},{n:'A-207',s:'reserved'},{n:'A-208',s:'occupied'},{n:'A-209',s:'occupied'},{n:'A-210',s:'occupied'},{n:'A-211',s:'available'},{n:'A-212',s:'occupied'}]},
+  '3':{ info:'🛏️ <strong>Lantai 3 (Standar)</strong> — Kipas + WiFi + Kamar Mandi Bersama · Rp 450.000/bulan', rooms:[{n:'A-301',s:'available'},{n:'A-302',s:'occupied'},{n:'A-303',s:'occupied'},{n:'A-304',s:'available'},{n:'A-305',s:'occupied'},{n:'A-306',s:'reserved'},{n:'A-307',s:'occupied'},{n:'A-308',s:'available'},{n:'A-309',s:'occupied'},{n:'A-310',s:'occupied'},{n:'A-311',s:'reserved'},{n:'A-312',s:'occupied'}]},
+};
+
+function showFloor(floor, btn, infoId, gridId, avId, ocId, rsId, barId) {
+  btn.closest('.tab-bar').querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+  btn.classList.add('active'); btn.setAttribute('aria-selected','true');
+  const d = FLOORS[floor];
+  document.getElementById(infoId).innerHTML = d.info;
+  const sl = { available:'Tersedia', occupied:'Terisi', reserved:'Dipesan' };
+  document.getElementById(gridId).innerHTML = d.rooms.map(r => `
+    <div class="kamar-card ${r.s}" onclick="onKamarClick('${r.n}','${r.s}')"
+      role="button" tabindex="0"
+      aria-label="Kamar ${r.n}: ${sl[r.s]}"
+      onkeydown="if(event.key==='Enter'||event.key===' ')onKamarClick('${r.n}','${r.s}')">
+      <div class="kamar-dot" aria-hidden="true"></div>
+      <div class="kamar-number">${r.n}</div>
+      <div class="kamar-status">${sl[r.s]}</div>
+    </div>`).join('');
+  const av = d.rooms.filter(r=>r.s==='available').length;
+  const oc = d.rooms.filter(r=>r.s==='occupied').length;
+  const rs = d.rooms.filter(r=>r.s==='reserved').length;
+  document.getElementById(avId).textContent = av;
+  document.getElementById(ocId).textContent = oc;
+  document.getElementById(rsId).textContent = rs;
+  const pct = Math.round((oc+rs)/d.rooms.length*100);
+  document.getElementById(barId).style.width = pct + '%';
+  const pctEl = document.getElementById(barId.replace('bar','pct'));
+  if (pctEl) pctEl.textContent = pct + '% terisi';
+}
+
+function onKamarClick(num, status) {
+  const msgs = { available:`Kamar ${num} tersedia! Klik "Daftar Sekarang" untuk memesan.`, reserved:`Kamar ${num} sedang dalam proses pemesanan.`, occupied:`Kamar ${num} sudah terisi.` };
+  showToast(msgs[status], status==='available'?'success':'info');
+}
+
+/* ══════════════════════════════════════
+   FILTER KELUHAN
+══════════════════════════════════════ */
+function filterKeluhan(filter, btn, listId) {
+  btn.closest('.tab-bar').querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+  btn.classList.add('active'); btn.setAttribute('aria-selected','true');
+  document.querySelectorAll('#' + listId + ' .keluhan-card').forEach(c => {
+    c.style.display = (filter==='semua' || c.dataset.status===filter) ? '' : 'none';
+  });
+}
+
+/* ══════════════════════════════════════
+   MODAL
+══════════════════════════════════════ */
+function openModal(id) {
+  const m = document.getElementById(id);
+  m.classList.add('open');
+  setTimeout(() => { const f = m.querySelector('input,select,button:not(.modal-close)'); if(f) f.focus(); }, 100);
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+
+/* ══════════════════════════════════════
+   FORM SUBMIT
+══════════════════════════════════════ */
+function submitKeluhan() {
+  const jdl = document.getElementById('kel-jdl').value.trim();
+  const dsc = document.getElementById('kel-dsc').value.trim();
+  ['err-jdl','err-dsc'].forEach(id => document.getElementById(id).classList.remove('show'));
+  let ok = true;
+  if (!jdl) { document.getElementById('err-jdl').classList.add('show'); ok = false; }
+  if (!dsc) { document.getElementById('err-dsc').classList.add('show'); ok = false; }
+  if (!ok) return;
+  closeModal('modal-keluhan');
+  document.getElementById('kel-jdl').value = '';
+  document.getElementById('kel-dsc').value = '';
+  showToast('✅ Laporan keluhan berhasil dikirim! Anda akan mendapat notifikasi perkembangan.', 'success');
+}
+
+function submitDaftar() {
+  closeModal('modal-daftar');
+  showToast('✅ Pendaftaran diterima! Tim asrama akan menghubungi Anda via WhatsApp dalam 1×24 jam.', 'success');
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+function showToast(msg, type='info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.innerHTML = `<span aria-hidden="true">${{success:'✅',error:'❌',info:'ℹ️'}[type]||'ℹ️'}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.cssText += 'opacity:0;transform:translateY(8px);transition:all .3s;'; setTimeout(()=>t.remove(),300); }, 3500);
+}
+
+/* ══════════════════════════════════════
+   INIT — public view default
+══════════════════════════════════════ */
+(function init() {
+  pubNav('beranda', document.querySelector('.pub-nav-btn'));
+  // init public kamar floor
+  const pubTab = document.querySelector('#pub-kamar .tab-btn');
+  if (pubTab) showFloor('1', pubTab, 'pub-floor-info','pub-kamar-grid','pub-av','pub-oc','pub-rs','pub-bar');
+})();
+</script>
+</body>
+</html>
